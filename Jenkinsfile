@@ -1,35 +1,70 @@
-pipeline {
-    agent {
-        label 'server1'
+pipeline 
+{
+
+agent {
+  label 'server1'
+}
+
+tools {
+  maven 'mymaven'
+}
+
+environment {
+  NAME = "moninderr"
+}
+
+
+parameters {
+  choice choices: ['dev', 'prod'], name: 'select_environment'
+}
+
+stages{
+
+    stage('build'){
+        steps {
+            sh 'mvn clean package -DskipTests=true'
+            echo "hello $NAME ${params.LASTNAME}"
+        }
+
+        
+
     }
 
-    tools {
-        jdk 'Java17'
-        maven 'Maven3'
+    stage('test')
+    {
+      parallel {
+        stage('testA')
+        {
+          agent { label 'server1'}
+          steps{
+            echo "this is test A"
+            sh "mvn test"
+          }
+        }
+        stage('testB')
+        { 
+          agent { label 'server1'}
+          steps{
+            echo "this is testB"
+            sh "mvn test"
+          }
+        }
+        stage("sonarqube analysis"){
+          steps {
+            withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
+            echo "sonarqube analysis"
+            sh "mvn sonar:sonar"
+          }
+        }
+      }
+      post {
+        success {
+            archiveArtifacts artifacts: '**/target/*.jar'
+                    }
+        }
     }
 
-    stages {
-        stage('cleanup workspace') {
-            steps {
-                cleanWs()
-            }
-        }
-        stage('checkout from SCM') {
-            steps {
-                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/recruit0173/complete-prodcution-e2e-pipeline.git'
-            }
-        }
-        stage('build application') {
-            steps {
-                echo 'Building the application...'
-                sh 'mvn clean package'
-            }
-        }
-        stage('test application') {
-            steps {
-                echo 'Testing the application...'
-                sh 'mvn test'
-            }
-        }
-    }
+    
+}
+
 }
