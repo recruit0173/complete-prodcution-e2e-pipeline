@@ -19,10 +19,16 @@ pipeline {
                 git branch: 'main', changelog: false, poll: false, url: 'https://github.com/recruit0173/complete-prodcution-e2e-pipeline.git'
             }
         }
-        stage('Deploy') {
+        stage('build application') {
             steps {
-                echo 'Deploying...'
-                // Add deploy commands here
+                echo 'Building the application...'
+                sh 'mvn clean package'
+            }
+        }
+        stage('test application') {
+            steps {
+                echo 'Testing the application...'
+                sh 'mvn test'
             }
         }
     }
