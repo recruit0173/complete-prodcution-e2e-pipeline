@@ -1,17 +1,20 @@
 pipeline {
-    agent any
+    agent server1
+
+    tools {
+        jdk 'Java17'
+        maven 'Maven3'
+    }
 
     stages {
-        stage('Build') {
+        stage('cleanup workspace') {
             steps {
-                echo 'Building...'
-                // Add build commands here
+                cleanWs()
             }
         }
-        stage('Test') {
+        stage('checkout from SCM') {
             steps {
-                echo 'Testing...'
-                // Add test commands here
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/recruit0173/complete-prodcution-e2e-pipeline.git'
             }
         }
         stage('Deploy') {
