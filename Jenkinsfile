@@ -1,63 +1,73 @@
-pipeline {
+pipeline{
 
-    agent {
-        label 'server1'
+ agent{
+        label "server1"
     }
-
     tools {
-        maven 'mymaven'
+        jdk 'Java17'
+        maven 'Maven3'
     }
 
-    environment {
-        NAME = "moninderr"
-    }
-
-    parameters {
-        choice choices: ['dev', 'prod'], name: 'select_environment'
-    }
-
-    stages {
-
-        stage('build') {
+    stages{
+        stage("Cleanup Workspace"){
             steps {
-                sh 'mvn clean package -DskipTests=true'
-                echo "hello $NAME ${params.LASTNAME}"
+                cleanWs()
             }
+
         }
 
-        stage('test') {
-            parallel {
-                stage('testA') {
-                    agent { label 'server1' }
-                    steps {
-                        echo "this is test A"
-                        sh "mvn test"
-                    }
-                }
-                stage('testB') {
-                    agent { label 'server1' }
-                    steps {
-                        echo "this is testB"
-                        sh "mvn test"
-                    }
-                }
-                stage('sonarqube analysis') {
-                    agent { label 'server1' }
-                    steps {
-                        script {
-                            withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
-                                sh "mvn sonar:sonar"
-                            }
-                        }
+    stage("Checkout from SCM"){
+            steps {
+                git branch: 'main', credentialsId: 'github', url: 'https://github.com/recruit0173/complete-prodcution-e2e-pipeline.git'
+            }
+
+        }
+
+    stage("Build Application"){
+            steps {
+                sh "mvn clean package"
+            }
+
+        }
+
+    stage("Test Application"){
+            steps {
+                sh "mvn test"
+            }
+
+        }
+
+    stage("Sonarqube Analysis") {
+            steps {
+                script {
+                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
+                        sh "mvn sonar:sonar"
                     }
                 }
             }
-        }
-    }
 
-    post {
-        success {
-            archiveArtifacts artifacts: '**/target/*.jar'
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
