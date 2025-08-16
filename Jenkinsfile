@@ -51,10 +51,11 @@ stages{
         }
         stage("sonarqube analysis"){
           steps {
-            withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
-            echo "sonarqube analysis"
-            sh "mvn sonar:sonar"
-          }
+            script {
+                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token') {
+                        sh "mvn sonar:sonar"
+                    }
+                }
         }
       }
       post {
