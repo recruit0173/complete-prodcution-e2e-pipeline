@@ -1,5 +1,7 @@
 pipeline {
-    agent server1
+    agent {
+        label 'server1'
+    }
 
     tools {
         jdk 'Java17'
